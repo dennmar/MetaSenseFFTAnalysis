@@ -12,7 +12,7 @@ TIME_COL_NAME = 'Ts'
 RAW_DATA_DIR = '/mnt/d/Internships/RawDataCSVs/'
 
 def main():
-  electrodes = ['CoWmV', 'CoAmV']
+  electrodes = ['No2WmV', 'No2AmV']
   loc_round_board_combos = [
       ('Donovan', 1, 17), ('Donovan', 1, 19), ('Donovan', 1, 21),
       ('El_Cajon', 2, 17), ('El_Cajon', 2, 19), ('El_Cajon', 2, 21),
@@ -20,14 +20,14 @@ def main():
       ('Donovan', 4, 17), ('Donovan', 4, 19), ('Donovan', 4, 21)
   ]
   freq_bounds = [
-      (0.04, 0.05), (0.07, 0.08), (0.06, 0.07), (0.07, 0.08), (0.03, 0.04),
-      (0.07, 0.08), (0.06, 0.07), (0.07, 0.08), (0.05, 0.06), (0.06, 0.07),
-      (0.05, 0.06), (0.07, 0.08), (0.05, 0.06), (0.05, 0.06), (0.07, 0.08),
-      (0.06, 0.07), (0.07, 0.08), (0.07, 0.08), (0.07, 0.08), (0.05, 0.06),
-      (0.05, 0.06), (0.07, 0.08), (0.06, 0.07), (0.07, 0.08)
+      (0.07, 0.08), (0.07, 0.08), (0.07, 0.08), (0.07, 0.08), (0.07, 0.08),
+      (0.07, 0.08), (0.07, 0.08), (0.07, 0.08), (0.07, 0.08), (0.07, 0.08),
+      (0.07, 0.08), (0.07, 0.08), (0.07, 0.08), (0.07, 0.08), (0.07, 0.08),
+      (0.06, 0.07), (0.04, 0.05), (0.07, 0.08), (0.07, 0.08), (0.07, 0.08),
+      (0.06, 0.07), (0.06, 0.07), (0.05, 0.06), (0.07, 0.08)
   ]
-  should_graph = False
-  should_calculate_noise = True
+  should_graph = True
+  should_calculate_noise = False
 
   i = 0
   for combo in loc_round_board_combos:
@@ -45,7 +45,7 @@ def main():
             N_fft)
         i += 1
         print(f'{location} Round {round_num} Board {board} {electrode}')
-        print(f'Power of white noise: {noise_power}')
+        print(f'Power of white noise: {noise_power} mV^2')
         print()
 
       completion_str = f'Done with {location} Round {round_num} Board ' + \
@@ -117,21 +117,6 @@ def closest_point_uniform_sampling(df, electrode, interval):
     uniform_samples.append(time_sorted_df.iloc[closest_point_index][electrode])
 
   return uniform_samples
-
-def calc_noise_power(base_dir, location, round_num, board, electrode,
-    freq_start,):
-  deployment_info = location + '_Round' + str(round_num) + '/Board' + str(board)
-  reads_file_path = base_dir + deployment_info + '_ReadsFromLog.csv'
-  signal_data = get_signal_data(reads_file_path, electrode)
-
-  fft_coeff = fft(signal_data)
-  N_fft = len(fft_coeff)
-  fft_power = np.power(np.abs(fft_coeff), 2) / np.power(N_fft, 2)
-
-  # only graph positive frequencies
-  freq = np.arange(0, int(len(fft_power) / 2) + 1) * \
-      (1 / SECONDS_BETWEEN_READS) / len(fft_power)
-  fft_power = fft_power[0:int(len(fft_power) / 2) + 1]
 
 def find_noise_power(freq, fft_power, freq_start, freq_end, N_fft):
   white_noise_inds = [i for i in range(len(freq)) if freq[i] >= freq_start and
